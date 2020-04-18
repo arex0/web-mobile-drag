@@ -1,4 +1,3 @@
-
 const ArrayMethods = Array.prototype
 const hypot = (p1, p2) => Math.hypot(p1.pageX - p2.pageX, p1.pageY - p2.pageY)
 const copyTouch = touch => ({ id: touch.identifier, pageX: touch.pageX, pageY: touch.pageY })
@@ -31,7 +30,8 @@ function draggable(ele){
             if(!cancel){
                 let shadow = ele.cloneNode(true), style = shadow.style
                     src = ele.getBoundingClientRect(), srcX = src.x, srcY = src.y,
-                    baseX = tc.pageX, baseY = tc.pageY
+                    baseX = tc.pageX, baseY = tc.pageY,
+                    data = new DataTransfer()
                 Object.entries(getComputedStyle(ele)).forEach(([attr,val])=>{style[attr] = val})
                 style.position = 'fixed'
                 style.left = srcX+'px'
@@ -60,6 +60,7 @@ function draggable(ele){
                         clientY: e.clientY,
                         pageX: e.pageX,
                         pageY: e.pageY,
+                        dataTransfer: data
                     }
                     if(t!=target){
                         init.relatedTarget = target
@@ -103,6 +104,7 @@ function draggable(ele){
                             clientY: t.clientY,
                             pageX: t.pageX,
                             pageY: t.pageY,
+                            dataTransfer: data
                         }))
                         ele.dispatchEvent(new DragEvent('dragend',t))
                         un(document,'touchcancel',DragEnd)
@@ -110,7 +112,15 @@ function draggable(ele){
                         un(document,'touchmove',DragMove,{passive:false})
                     }
                 }
-                ele.dispatchEvent(new DragEvent('dragstart', tc))
+                ele.dispatchEvent(new DragEvent('dragstart', {
+                    screenX: tc.screenX,
+                    screenY: tc.screenY,
+                    clientX: tc.clientX,
+                    clientY: tc.clientY,
+                    pageX: tc.pageX,
+                    pageY: tc.pageY,
+                    dataTransfer: data
+                }))
                 ele.dispatchEvent(new DragEvent('dragenter',tc))
                 target = ele
                 let evt = new DragEvent('dragover',{
@@ -120,6 +130,7 @@ function draggable(ele){
                     clientY: e.clientY,
                     pageX: e.pageX,
                     pageY: e.pageY,
+                    dataTransfer: data
                 })
                 ele.dispatchEvent(evt)
                 overTimer = setInterval(()=>ele.dispatchEvent(evt),350)
